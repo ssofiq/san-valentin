@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// IMÁGENES
+// ===== IMÁGENES =====
 const fondo = new Image();
 fondo.src = "img/background.png";
 
@@ -16,26 +16,28 @@ const personajes = [
 
 let personaje = new Image();
 
-// POSICIÓN Y ESTADO
+// ===== POSICIÓN Y ESTADO =====
 let x = 50;
-let y = canvas.height - 180;
+let yBase = canvas.height - 180;
+let y = yBase;
 let paso = 0;
 let caminando = false;
 let preguntaActual = 0;
 let respuestasFinales = 0;
+let juegoTerminado = false;
 
-// PARADAS
+// ===== PARADAS =====
 const paradas = [300, 600, 900, 1200];
 
-// ELEMENTOS HTML
+// ===== ELEMENTOS HTML =====
 const panel = document.getElementById("panel");
 const texto = document.getElementById("texto");
 const musica = document.getElementById("musica");
 
-// PREGUNTAS
+// ===== PREGUNTAS =====
 const preguntas = [
   {
-    texto: "¿Cuál de los días en los que me pediste ser tu novia es el más importante?",
+    texto: "¿Cuál de los días en los que me pediste ser tu novia es el más importante para los dos?",
     opciones: ["17 de octubre", "29 de octubre", "29 de diciembre"],
     correcta: 1
   },
@@ -56,71 +58,74 @@ const preguntas = [
   }
 ];
 
-// SELECCIÓN DE PERSONAJE
+// ===== SELECCIÓN DE PERSONAJE =====
 function elegir(i) {
   personaje.src = personajes[i];
   document.getElementById("menu").style.display = "none";
   canvas.style.display = "block";
+
+  musica.volume = 0.4;
   musica.play();
+
   caminando = true;
 }
 
-// EFECTO ESCRITURA
+// ===== EFECTO ESCRITURA =====
 function escribir(msg) {
   texto.innerHTML = "";
   let i = 0;
+
   const intervalo = setInterval(() => {
-    texto.innerHTML += msg[i];
+    texto.innerHTML += msg.charAt(i);
     i++;
     if (i >= msg.length) clearInterval(intervalo);
-  }, 50);
+  }, 40);
 }
 
-// MOSTRAR PREGUNTA
+// ===== MOSTRAR PREGUNTA =====
 function mostrarPregunta() {
   caminando = false;
   panel.innerHTML = "";
+  panel.style.display = "block";
 
   const p = preguntas[preguntaActual];
-  const pregunta = document.createElement("p");
-  pregunta.textContent = p.texto;
-  panel.appendChild(pregunta);
+  escribir(p.texto);
 
   p.opciones.forEach((op, i) => {
     const b = document.createElement("button");
     b.textContent = op;
 
     b.onclick = () => {
-      b.disabled = true;      // 🔒 solo una vez
+      b.disabled = true;
       b.style.opacity = 0.5;
       responder(i);
     };
 
     panel.appendChild(b);
   });
-
-  panel.style.display = "block";
 }
 
-// RESPONDER
+// ===== RESPONDER =====
 function responder(i) {
   const p = preguntas[preguntaActual];
 
-  // ÚLTIMA PREGUNTA (sin correcta)
+  // ÚLTIMA PREGUNTA
   if (p.correcta === -1) {
     respuestasFinales++;
     escribir("Amo cada cosa de vos 💖");
 
-    if (respuestasFinales >= p.opciones.length) {
+    if (respuestasFinales === p.opciones.length) {
       panel.style.display = "none";
+      juegoTerminado = true;
 
       setTimeout(() => {
         escribir(
-          "Gracias por recorrer nuestra historia conmigo.\n" +
-          "Todos los recuerdos que tenemos juntos son lo más hermoso.\n" +
-          "Te amo muchito. Gracias por elegirme 💕"
+          "Gracias por recorrer nuestra historia conmigo 💕\n\n" +
+          "Todos los recuerdos que tenemos juntos son lo más hermoso\n" +
+          "Te amo muchito.\n\n" +
+          "Gracias por elegirme 💖"
         );
-      }, 1800);
+      }, 1500);
     }
     return;
   }
@@ -133,27 +138,35 @@ function responder(i) {
   }
 }
 
-// MOVIMIENTO
+// ===== MOVIMIENTO =====
 function mover() {
-  if (caminando) {
-    x += 2;
-    paso += 0.2;
-    y = canvas.height - 180 + Math.sin(paso) * 4;
-  }
+  if (!caminando) return;
+
+  x += 2;
+  paso += 0.2;
+  y = yBase + Math.sin(paso) * 6;
 }
 
-// LOOP PRINCIPAL
+// ===== LOOP PRINCIPAL =====
 function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Fondo siempre visible
   ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
 
   mover();
 
-  if (caminando && preguntaActual < paradas.length && x >= paradas[preguntaActual]) {
+  // Paradas
+  if (
+    caminando &&
+    preguntaActual < paradas.length &&
+    x >= paradas[preguntaActual]
+  ) {
     mostrarPregunta();
   }
 
-  ctx.drawImage(personaje, x, y, 96, 96);
+  // Personaje
+  ctx.drawImage(personaje, x, y, 120, 120);
 
   requestAnimationFrame(loop);
 }
