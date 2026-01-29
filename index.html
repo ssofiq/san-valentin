@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Un juego especial 💖</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="menu">
+  <h1>Elegí tu personaje 💕</h1>
+  <div class="chars">
+    <img src="img/char1.png" onclick="elegir(0)">
+    <img src="img/char2.png" onclick="elegir(1)">
+    <img src="img/char3.png" onclick="elegir(2)">
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="panel"></div>
+<div id="texto"></div>
+
+<audio id="musica" src="audio/music.mp3" loop></audio>
+
+<script src="js/game.js"></script>
+</body>
+</html>
